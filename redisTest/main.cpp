@@ -6,44 +6,7 @@ int main()
 	try
 	{
 		// Connection Option
-		ConnectionOptions opt_;
-		opt_.host = "127.0.0.1";
-		opt_.port = 6379;
-		opt_.socket_timeout = std::chrono::milliseconds(200);
-
-		auto redis_ = Redis(opt_);
-
-		auto sub_ = redis_.subscriber();
-
-		sub_.on_message([](const std::string& channel, const std::string& msg) {
-			std::cout << "channel : " << channel << std::endl;
-			std::cout << "msg : " << msg << std::endl;
-		});
-
-		sub_.on_meta([](Subscriber::MsgType type, OptionalString channel, long long num) {
-			if (type == Subscriber::MsgType::SUBSCRIBE) {
-				std::cout << "Successfully subscribe channel: " << *channel << std::endl;
-			}
-			else if (type == Subscriber::MsgType::UNSUBSCRIBE && num == 0) {
-				std::cout << "Successfully unsubscribed channel :" << *channel << std::endl;
-			}
-			});
-
-		sub_.subscribe("test");
-
-		boost::thread consume_thread([&sub_] {
-			while (true) {
-				try {
-					sub_.consume();
-					std::cout << "Successfully consumed messages from Redis." << std::endl;
-				}
-				catch (const TimeoutError& timeout_err) {
-				}
-				catch (const Error& e) {
-					std::cout << "ComsumeErr :" << e.what() << std::endl;
-				}
-			}
-		});
+		testRedis redis_;
 
 		std::string input;
 		while (true) {
@@ -51,7 +14,7 @@ int main()
 			if (input == "quit") {
 				break;
 			}
-			redis_.publish("test", input);
+			redis_.redis_->publish("test", input);
 		}
 
 	}
@@ -59,9 +22,6 @@ int main()
 	{
 		std::cout << "ERROR : " << e.what() << std::endl;
 	}
-
-
-
 
 	return 0;
 }
