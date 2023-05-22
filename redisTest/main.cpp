@@ -35,6 +35,9 @@ int main()
 			while (true) {
 				try {
 					sub_.consume();
+					std::cout << "Successfully consumed messages from Redis." << std::endl;
+				}
+				catch (const TimeoutError& timeout_err) {
 				}
 				catch (const Error& e) {
 					std::cout << "ComsumeErr :" << e.what() << std::endl;
@@ -48,6 +51,7 @@ int main()
 			if (input == "quit") {
 				break;
 			}
+			redis_.publish("test", input);
 		}
 
 	}
